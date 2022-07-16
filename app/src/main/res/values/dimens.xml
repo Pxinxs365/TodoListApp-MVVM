@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="text_main">18sp</dimen>
+    <dimen name="text_body">16sp</dimen>
+
+    <dimen name="base_dimen">8dp</dimen>
+    <dimen name="normal_dimen">12dp</dimen>
+    <dimen name="big_dimen">16dp</dimen>
+
+    <dimen name="elements_margin">32dp</dimen>
+    <dimen name="clickable_view_height">44dp</dimen>
+
+    <dimen name="card_elevation">8dp</dimen>
+    <dimen name="toolbar_elevation">8dp</dimen>
+    <dimen name="card_radius">4dp</dimen>
+</resources>

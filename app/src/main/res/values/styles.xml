@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Title">
+        <item name="android:textSize">@dimen/text_main</item>
+        <item name="android:textColor">@color/color_text_main</item>
+        <item name="android:minHeight">@dimen/clickable_view_height</item>
+    </style>
+
+    <style name="Description">
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textColor">@color/color_text_description</item>
+        <item name="android:minHeight">@dimen/clickable_view_height</item>
+    </style>
+
+    <style name="Toolbar">
+        <item name="android:background">@color/purple_200</item>
+        <item name="android:elevation">@dimen/toolbar_elevation</item>
+    </style>
+</resources>

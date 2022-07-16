@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        style="@style/Toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="@drawable/ic_back"
+        app:title="@string/task_detail" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/tvTitle"
+        style="@style/Title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/title"
+        android:inputType="text"
+        android:paddingHorizontal="@dimen/big_dimen"
+        android:paddingVertical="@dimen/base_dimen"
+        android:textColor="@color/color_text_main" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/tvDescription"
+        style="@style/Description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/description"
+        android:paddingHorizontal="@dimen/big_dimen"
+        android:paddingVertical="@dimen/base_dimen"
+        android:textColor="@color/color_text_main" />
+
+    <TextView
+        android:id="@+id/tvDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_dimen"
+        android:background="?android:selectableItemBackground"
+        android:drawablePadding="@dimen/normal_dimen"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/clickable_view_height"
+        android:paddingHorizontal="@dimen/big_dimen"
+        android:paddingVertical="@dimen/base_dimen"
+        android:text="@string/date"
+        android:textColor="@color/color_text_main"
+        app:drawableEndCompat="@drawable/ic_edit"
+        tools:text="_2022.07.14" />
+
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="@dimen/base_dimen"
+        android:layout_marginTop="@dimen/elements_margin"
+        android:layout_marginEnd="@dimen/base_dimen"
+        android:enabled="false"
+        android:text="@string/save" />
+
+</LinearLayout>

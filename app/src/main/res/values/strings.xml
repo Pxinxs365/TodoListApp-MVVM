@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Todo list app</string>
+    <string name="task_list_is_empty">Task list is empty</string>
+    <string name="task_list">Task List</string>
+    <string name="task_detail">Task Detail</string>
+    <string name="title">Title</string>
+    <string name="description">Description</string>
+    <string name="date">Date</string>
+    <string name="save">Save</string>
+    <string name="floating_widget_content_description">Add new task</string>
+</resources>
