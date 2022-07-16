@@ -1,4 +1,4 @@
 Todo list app
 ===========================
 
-Project written on MVP and covered by Unit Tests.
+Project written on MVVM + Hilt DI.
