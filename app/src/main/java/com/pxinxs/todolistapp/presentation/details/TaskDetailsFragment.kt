@@ -7,37 +7,34 @@ import android.view.ViewGroup
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.pxinxs.todolistapp.R
-import com.pxinxs.todolistapp.data.repositories.ITasksRepository
-import com.pxinxs.todolistapp.data.repositories.TasksRepository
 import com.pxinxs.todolistapp.databinding.FragmentTaskDetailsBinding
+import com.pxinxs.todolistapp.domain.models.Task
 import com.pxinxs.todolistapp.presentation.dialogs.DatePickerFragment
 import com.pxinxs.todolistapp.presentation.disable
 import com.pxinxs.todolistapp.presentation.enable
-import com.pxinxs.todolistapp.presentation.utils.dateprovider.DateProvider
-import com.pxinxs.todolistapp.presentation.utils.dateprovider.IDateProvider
-import com.pxinxs.todolistapp.presentation.utils.uuidgenerator.IUuidGenerator
-import com.pxinxs.todolistapp.presentation.utils.uuidgenerator.UuidGenerator
+import com.pxinxs.todolistapp.presentation.utils.DateFormatter
+import com.pxinxs.todolistapp.presentation.utils.viewmodel.launchAndRepeatWithViewLifecycle
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
-class TaskDetailsFragment : Fragment(), TaskDetailsView, TaskDetailsRouter {
+@AndroidEntryPoint
+class TaskDetailsFragment : Fragment() {
 
-    // should be replaced with DI, made for simplicity
-    private val uuidGenerator: IUuidGenerator by lazy { UuidGenerator() }
-    private val dateProvider: IDateProvider by lazy { DateProvider() }
-    private val tasksRepository: ITasksRepository by lazy { TasksRepository.getInstance() }
-    private val presenter by lazy {
-        TaskDetailsPresenter(
-            dateProvider,
-            uuidGenerator,
-            tasksRepository
-        )
-    }
+//    private val args: TaskDetailsFragment by navArgs()
 
-    private var datePickerFragment: DialogFragment? = null
+    private val viewModel: TaskDetailsViewModel by viewModels()
 
     private var _binding: FragmentTaskDetailsBinding? = null
     private val binding get() = _binding!!
+
+    private var datePickerFragment: DialogFragment? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,33 +45,57 @@ class TaskDetailsFragment : Fragment(), TaskDetailsView, TaskDetailsRouter {
 
         binding.toolbar.setNavigationOnClickListener { requireActivity().onBackPressed() }
         binding.tvTitle.addTextChangedListener {
-            presenter.onTaskChanged(
+            viewModel.onTaskChanged(
                 binding.tvTitle.text.toString(),
                 binding.tvDescription.text.toString()
             )
         }
         binding.tvDescription.addTextChangedListener {
-            presenter.onTaskChanged(
+            viewModel.onTaskChanged(
                 binding.tvTitle.text.toString(),
                 binding.tvDescription.text.toString()
             )
         }
-        binding.tvDate.setOnClickListener { presenter.onDateClicked() }
+        binding.tvDate.setOnClickListener { showDatePickerDialog() }
         binding.btnSave.setOnClickListener {
-            presenter.onSaveButtonClicked(
+            viewModel.onSaveButtonClicked(
                 title = binding.tvTitle.text.toString(),
                 description = binding.tvDescription.text.toString()
             )
         }
-
-        presenter.setTaskId(arguments?.getString(KEY_TASK_ID))
-        presenter.onTakeView(this)
-        presenter.onTakeRouter(this)
-        savedInstanceState?.getString(KEY_DATE_VALUE)?.let { restoredDate ->
-            presenter.restoreDate(restoredDate)
-        }
+        viewModel.taskId2.value = arguments?.getString(KEY_TASK_ID)
 
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.task.collect { task ->
+                    if (task == null) {
+                        showCreateNewTask()
+                    } else {
+                        showTaskDetails(task)
+                    }
+                }
+            }
+        }
+
+        launchAndRepeatWithViewLifecycle {
+            viewModel.saveButtonEnabled.collect { isEnabled ->
+                binding.btnSave.isEnabled = isEnabled
+            }
+        }
+
+        // Observe navigation events
+        launchAndRepeatWithViewLifecycle {
+            viewModel.navigationActions.collect { action ->
+                if (action is TaskDetailsViewModel.TaskNavigationAction.CloseFragment) {
+                    findNavController().navigate(R.id.action_taskDetailsFragment_to_taskListFragment)
+                }
+            }
+        }
     }
 
     override fun onPause() {
@@ -82,43 +103,39 @@ class TaskDetailsFragment : Fragment(), TaskDetailsView, TaskDetailsRouter {
         datePickerFragment?.dismiss()
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putString(KEY_DATE_VALUE, binding.tvDate.text.toString())
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
         datePickerFragment?.dismissAllowingStateLoss()
         datePickerFragment = null
-        presenter.onDropView()
-        presenter.onDropRouter()
     }
 
-    override fun showCreateNewTask(defaultDateFormatted: String) {
+    private fun showCreateNewTask() {
+        val todayDateInMillis = viewModel.dateInMillis.value
+        val todayDateFormatted = DateFormatter.getFormattedDate(todayDateInMillis)
+
         binding.tvTitle.enable()
         binding.tvDescription.enable()
-        binding.tvDate.text = defaultDateFormatted
+        binding.tvDate.text = todayDateFormatted
         binding.btnSave.disable()
     }
 
-    override fun showTaskDetails(title: String, description: String, formattedDate: String) {
+    private fun showTaskDetails(task: Task) {
         binding.tvTitle.apply {
-            setText(title)
+            setText(task.title)
             setBackgroundResource(android.R.color.transparent)
             disable()
         }
         binding.tvDescription.apply {
-            setText(description)
+            setText(task.description)
             setBackgroundResource(android.R.color.transparent)
             disable()
         }
-        binding.tvDate.text = formattedDate
+        binding.tvDate.text = DateFormatter.getFormattedDate(task.dateInMillis)
         binding.btnSave.enable()
     }
 
-    override fun showDatePickerDialog() {
+    private fun showDatePickerDialog() {
         datePickerFragment?.dismiss()
         datePickerFragment = DatePickerFragment().apply {
             setListener(dateSelectedListener)
@@ -127,28 +144,11 @@ class TaskDetailsFragment : Fragment(), TaskDetailsView, TaskDetailsRouter {
 
     private val dateSelectedListener = object : DatePickerFragment.DateListener {
         override fun onDateSelected(dateInMillis: Long) {
-            presenter.onDateSelected(dateInMillis)
+            viewModel.onDateSelected(dateInMillis)
         }
-    }
-
-    override fun showDate(formattedDate: String) {
-        binding.tvDate.text = formattedDate
-    }
-
-    override fun showSaveButtonEnabled() {
-        binding.btnSave.enable()
-    }
-
-    override fun showSaveButtonDisabled() {
-        binding.btnSave.disable()
-    }
-
-    override fun closeScreen() {
-        findNavController().navigate(R.id.action_taskDetailsFragment_to_taskListFragment)
     }
 
     companion object {
         const val KEY_TASK_ID = "key_task_id"
-        private const val KEY_DATE_VALUE = "key_date_value"
     }
 }

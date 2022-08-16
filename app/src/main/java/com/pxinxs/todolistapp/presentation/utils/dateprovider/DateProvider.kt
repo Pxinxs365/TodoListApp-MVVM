@@ -2,8 +2,9 @@ package com.pxinxs.todolistapp.presentation.utils.dateprovider
 
 import com.pxinxs.todolistapp.presentation.utils.DateFormatter
 import java.util.Calendar
+import javax.inject.Inject
 
-class DateProvider : IDateProvider {
+class DateProvider @Inject constructor() : IDateProvider {
 
     override fun provideTodayDateInMillis() = Calendar.getInstance().timeInMillis
 
