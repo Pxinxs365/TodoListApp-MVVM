@@ -7,12 +7,8 @@ import android.view.ViewGroup
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.pxinxs.todolistapp.R
 import com.pxinxs.todolistapp.databinding.FragmentTaskDetailsBinding
 import com.pxinxs.todolistapp.domain.models.Task
@@ -22,14 +18,11 @@ import com.pxinxs.todolistapp.presentation.enable
 import com.pxinxs.todolistapp.presentation.utils.DateFormatter
 import com.pxinxs.todolistapp.presentation.utils.viewmodel.launchAndRepeatWithViewLifecycle
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class TaskDetailsFragment : Fragment() {
 
-//    private val args: TaskDetailsFragment by navArgs()
-
-    private val viewModel: TaskDetailsViewModel by viewModels()
+    private val viewModel: TaskDetailsViewModel by hiltNavGraphViewModels(R.id.nav_graph)
 
     private var _binding: FragmentTaskDetailsBinding? = null
     private val binding get() = _binding!!
@@ -63,22 +56,18 @@ class TaskDetailsFragment : Fragment() {
                 description = binding.tvDescription.text.toString()
             )
         }
-        viewModel.taskId2.value = arguments?.getString(KEY_TASK_ID)
+//        viewModel.taskId2.value = arguments?.getString(KEY_TASK_ID)
 
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.task.collect { task ->
-                    if (task == null) {
-                        showCreateNewTask()
-                    } else {
-                        showTaskDetails(task)
-                    }
-                }
+        viewModel.task.observe(viewLifecycleOwner) { task ->
+            if (task == null) {
+                showCreateNewTask()
+            } else {
+                showTaskDetails(task)
             }
         }
 
