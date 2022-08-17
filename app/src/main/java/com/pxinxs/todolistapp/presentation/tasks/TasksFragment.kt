@@ -32,27 +32,11 @@ class TasksFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentTasksBinding.inflate(inflater, container, false)
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        binding.fabAddTask.setOnClickListener { viewModel.onAddTaskClicked() }
-
-//        viewLifecycleOwner.lifecycleScope.launch {
-//            repeatOnLifecycle(Lifecycle.State.STARTED) {
-//                viewModel.tasksFlow.collect { tasks ->
-//                    if (tasks.isEmpty()) {
-//                        showNoTasks()
-//                    } else {
-//                        showTasks(tasks)
-//                    }
-//                }
-//            }
-//        }
-
         viewModel.tasksLiveData.observe(viewLifecycleOwner) {tasks ->
             if (tasks.isEmpty()) {
                 showNoTasks()
@@ -69,6 +53,8 @@ class TasksFragment : Fragment() {
                 }
             }
         }
+
+        binding.fabAddTask.setOnClickListener { viewModel.onAddTaskClicked() }
     }
 
     private fun showTasks(tasks: List<TasksAdapter.UiTask>) {

@@ -3,19 +3,13 @@ package com.pxinxs.todolistapp.presentation.tasks
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
 import com.pxinxs.todolistapp.data.repositories.ITasksRepository
 import com.pxinxs.todolistapp.domain.models.Task
 import com.pxinxs.todolistapp.presentation.utils.DateFormatter
-import com.pxinxs.todolistapp.presentation.utils.viewmodel.WhileViewSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.CONFLATED
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,18 +27,6 @@ class TasksViewModel @Inject constructor(
 
     private val _navigationActions = Channel<TaskNavigationAction>(capacity = CONFLATED)
     val navigationActions: Flow<TaskNavigationAction> = _navigationActions.receiveAsFlow()
-
-    init {
-        viewModelScope.launch {
-            delay(1)
-            val id = "uuidGenerator.getNewUuid()"
-            val task = Task(id, "title", "description", 10000)
-
-            withContext(Dispatchers.IO) {
-                tasksRepository.saveTask(task)
-            }
-        }
-    }
 
     fun onAddTaskClicked() {
         _navigationActions.trySend(TaskNavigationAction.NavigateToTaskDetails(null))
